@@ -2,11 +2,19 @@ const vscode = require('vscode');
 const os = require('os');
 
 var statusBarArray = [];
+var menuStatusBar;
+var actionsStatusBar;
+var menuItems = [];
 var selectList = [];
 var eventChangeActiveTextEditor;
 var outputChannel;
 const RunTaskCommand = "actboy168.run-task"
 const SelectTaskCommand = "actboy168.select-task"
+const OpenMenuCommand = "actboy168.tasks2.openMenu"
+const OpenSettingsCommand = "actboy168.tasks2.openSettings"
+const ShowActionsCommand = "actboy168.tasks2.showActions"
+const RefreshCommand = "actboy168.tasks2.refresh"
+const SettingsId = "tasks.statusbar"
 
 //const VSCodeVersion = (function() {
 //    const res = vscode.version.split(".");
@@ -29,6 +37,11 @@ function needShowStatusBar(statusBar, currentFilePath) {
     return false;
 }
 
+function getDisplayMode() {
+    const settings = vscode.workspace.getConfiguration("tasks.statusbar");
+    return settings.get("displayMode", "menu") === "all" ? "all" : "menu";
+}
+
 function updateStatusBar() {
     for (const statusBar of statusBarArray) {
         statusBar.hide();
@@ -36,8 +49,35 @@ function updateStatusBar() {
     selectList = [];
 
     const settings = vscode.workspace.getConfiguration("tasks.statusbar");
-    let count = 0;
     const currentFilePath = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document.fileName;
+
+    if (getDisplayMode() === "menu") {
+        // In menu mode all visible tasks become entries in the dropdown.
+        menuItems = [];
+        for (let i = 0; i < statusBarArray.length - 1; ++i) {
+            const statusBar = statusBarArray[i];
+            if (needShowStatusBar(statusBar, currentFilePath)) {
+                menuItems.push({
+                    label: statusBar.text,
+                    description: statusBar.tooltip ? statusBar.tooltip.value : undefined,
+                    task: statusBar.command.arguments[0]
+                });
+            }
+        }
+        if (menuStatusBar) {
+            if (menuItems.length > 0) {
+                menuStatusBar.show();
+                if (actionsStatusBar) actionsStatusBar.show();
+            } else {
+                menuStatusBar.hide();
+                if (actionsStatusBar) actionsStatusBar.hide();
+            }
+        }
+        return;
+    }
+
+    // "all" mode: legacy behavior, each task is its own item.
+    let count = 0;
     for (let i = 0; i < statusBarArray.length - 1; ++i) {
         const statusBar = statusBarArray[i];
         if (needShowStatusBar(statusBar, currentFilePath)) {
@@ -80,11 +120,81 @@ function cleanStatusBar() {
         i.dispose();
     });
     statusBarArray = [];
+    menuItems = [];
+    if (menuStatusBar) menuStatusBar.hide();
+    if (actionsStatusBar) actionsStatusBar.hide();
+}
+
+function getAlignment() {
+    const settings = vscode.workspace.getConfiguration("tasks.statusbar");
+    return settings.get("alignment", "right") === "left"
+        ? vscode.StatusBarAlignment.Left
+        : vscode.StatusBarAlignment.Right;
+}
+
+function getPriority() {
+    const settings = vscode.workspace.getConfiguration("tasks.statusbar");
+    const p = settings.get("priority");
+    return typeof p === "number" ? p : 50;
+}
+
+function ensureMenuStatusBar() {
+    const settings = vscode.workspace.getConfiguration("tasks.statusbar");
+    const alignment = getAlignment();
+    const priority = getPriority();
+    const label = settings.get("menu.label", "Tasks");
+    const icon = settings.get("menu.icon", "checklist");
+    const showActions = settings.get("menu.showActionsButton", true);
+
+    if (menuStatusBar && (menuStatusBar.alignment !== alignment || menuStatusBar.priority !== priority)) {
+        menuStatusBar.dispose();
+        menuStatusBar = undefined;
+    }
+    if (!menuStatusBar) {
+        menuStatusBar = vscode.window.createStatusBarItem(alignment, priority);
+        menuStatusBar.name = "Tasks2";
+    }
+    menuStatusBar.text = icon ? `$(${icon}) ${label}` : label;
+    menuStatusBar.tooltip = new vscode.MarkdownString(
+        `**Tasks2**\n\nClick to pick a task to run.\n\n[$(gear) Open Settings](command:${OpenSettingsCommand})`,
+        true
+    );
+    menuStatusBar.tooltip.isTrusted = true;
+    menuStatusBar.command = OpenMenuCommand;
+
+    if (showActions) {
+        if (actionsStatusBar && (actionsStatusBar.alignment !== alignment || actionsStatusBar.priority !== priority - 1)) {
+            actionsStatusBar.dispose();
+            actionsStatusBar = undefined;
+        }
+        if (!actionsStatusBar) {
+            actionsStatusBar = vscode.window.createStatusBarItem(alignment, priority - 1);
+            actionsStatusBar.name = "Tasks2 Actions";
+        }
+        actionsStatusBar.text = "$(kebab-vertical)";
+        actionsStatusBar.tooltip = "Tasks2: Actions (Settings, Refresh, ...)";
+        actionsStatusBar.command = ShowActionsCommand;
+    } else if (actionsStatusBar) {
+        actionsStatusBar.dispose();
+        actionsStatusBar = undefined;
+    }
+}
+
+function disposeMenuStatusBar() {
+    if (menuStatusBar) {
+        menuStatusBar.dispose();
+        menuStatusBar = undefined;
+    }
+    if (actionsStatusBar) {
+        actionsStatusBar.dispose();
+        actionsStatusBar = undefined;
+    }
 }
 
 function deactivate() {
     closeUpdateStatusBar();
     cleanStatusBar();
+    disposeMenuStatusBar();
     if (outputChannel !== undefined) {
         outputChannel.dispose();
     }
@@ -376,9 +486,27 @@ function createSelectStatusBar() {
 }
 
 function syncStatusBar(memoryStatusBarArray) {
+    const alignment = getAlignment();
+    const priority = getPriority();
+    const mode = getDisplayMode();
+
+    // If alignment/priority changed, recreate all items so they appear on the correct side.
+    if (statusBarArray.length > 0) {
+        const first = statusBarArray[0];
+        if (first.alignment !== alignment || first.priority !== priority) {
+            cleanStatusBar();
+        }
+    }
+
+    if (mode === "menu") {
+        ensureMenuStatusBar();
+    } else {
+        disposeMenuStatusBar();
+    }
+
     const diff = memoryStatusBarArray.length - statusBarArray.length;
     for (let i = 0; i < diff; ++i) {
-        let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
+        let statusBar = vscode.window.createStatusBarItem(alignment, priority);
         statusBar.name = "Tasks";
         statusBarArray.push(statusBar);
     }
@@ -554,6 +682,88 @@ function runTask(task) {
     });
 }
 
+function openTasksMenu() {
+    const items = menuItems.length > 0 ? menuItems : [];
+    if (items.length === 0) {
+        vscode.window.showInformationMessage("Tasks2: no tasks available for the current context.");
+        return;
+    }
+    const qp = vscode.window.createQuickPick();
+    qp.items = items;
+    qp.placeholder = "Select task to execute";
+    qp.matchOnDescription = true;
+    const settingsButton = {
+        iconPath: new vscode.ThemeIcon("gear"),
+        tooltip: "Open Tasks2 Settings"
+    };
+    const refreshButton = {
+        iconPath: new vscode.ThemeIcon("refresh"),
+        tooltip: "Refresh tasks"
+    };
+    qp.buttons = [refreshButton, settingsButton];
+    qp.onDidTriggerButton((btn) => {
+        if (btn === settingsButton) {
+            qp.hide();
+            vscode.commands.executeCommand("workbench.action.openSettings", `@id:${SettingsId}`);
+        } else if (btn === refreshButton) {
+            loadTasksWait();
+        }
+    });
+    qp.onDidAccept(() => {
+        const sel = qp.selectedItems[0];
+        qp.hide();
+        if (sel && sel.task) {
+            runTask(sel.task);
+        }
+    });
+    qp.onDidHide(() => qp.dispose());
+    qp.show();
+}
+
+function showActionsMenu() {
+    const actions = [
+        {
+            label: "$(gear) Open Settings",
+            description: "Configure Tasks2",
+            action: "settings"
+        },
+        {
+            label: "$(refresh) Refresh Tasks",
+            description: "Re-scan tasks.json",
+            action: "refresh"
+        },
+        {
+            label: "$(list-unordered) Show Tasks Menu",
+            description: "Pick a task to run",
+            action: "menu"
+        },
+        {
+            label: "$(settings-gear) Edit tasks.json",
+            description: "Open the workspace tasks.json file",
+            action: "editTasks"
+        }
+    ];
+    vscode.window.showQuickPick(actions, { placeHolder: "Tasks2 actions" }).then((picked) => {
+        if (!picked) return;
+        switch (picked.action) {
+            case "settings":
+                vscode.commands.executeCommand("workbench.action.openSettings", `@id:${SettingsId}`);
+                break;
+            case "refresh":
+                loadTasksWait();
+                break;
+            case "menu":
+                openTasksMenu();
+                break;
+            case "editTasks":
+                vscode.commands.executeCommand("workbench.action.tasks.openUserTasks").then(undefined, () => {
+                    vscode.commands.executeCommand("workbench.action.tasks.configureTaskRunner");
+                });
+                break;
+        }
+    });
+}
+
 function activate(context) {
     context.subscriptions.push(
         vscode.commands.registerCommand(RunTaskCommand, (args) => {
@@ -583,7 +793,22 @@ function activate(context) {
                 }
             })
         }),
-        vscode.workspace.onDidChangeConfiguration(loadTasksWait),
+        vscode.commands.registerCommand(OpenMenuCommand, openTasksMenu),
+        vscode.commands.registerCommand(OpenSettingsCommand, () => {
+            vscode.commands.executeCommand("workbench.action.openSettings", `@id:${SettingsId}`);
+        }),
+        vscode.commands.registerCommand(ShowActionsCommand, showActionsMenu),
+        vscode.commands.registerCommand(RefreshCommand, loadTasksWait),
+        vscode.workspace.onDidChangeConfiguration((e) => {
+            if (e.affectsConfiguration("tasks.statusbar")) {
+                if (getDisplayMode() === "menu") {
+                    ensureMenuStatusBar();
+                } else {
+                    disposeMenuStatusBar();
+                }
+            }
+            loadTasksWait();
+        }),
         vscode.workspace.onDidChangeWorkspaceFolders(loadTasksWait),
         vscode.tasks.onDidStartTask((e) => {
             refreshTask(e.execution.task);

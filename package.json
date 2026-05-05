@@ -1,22 +1,37 @@
 {
-    "name": "tasks",
-    "displayName": "Tasks",
-    "description": "Load VSCode Tasks into Status Bar.",
-    "version": "0.16.1",
+    "name": "tasks2",
+    "displayName": "Tasks2",
+    "description": "Load VSCode Tasks into the Status Bar with a configurable dropdown menu. Forked from actboy168/vscode-tasks.",
+    "version": "0.17.0",
     "publisher": "actboy168",
+    "author": {
+        "name": "actboy168",
+        "url": "https://github.com/actboy168"
+    },
+    "contributors": [
+        {
+            "name": "Dragos Catalin Vladulescu",
+            "email": "dragoscv12@gmail.com",
+            "url": "https://github.com/dragoscv"
+        }
+    ],
+    "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/actboy168/vscode-tasks"
+        "url": "https://github.com/dragoscv/vscode-tasks2"
     },
     "bugs": {
-        "url": "https://github.com/actboy168/vscode-tasks/issues"
+        "url": "https://github.com/dragoscv/vscode-tasks2/issues"
     },
+    "homepage": "https://github.com/dragoscv/vscode-tasks2#readme",
     "categories": [
         "Other"
     ],
     "keywords": [
         "task",
-        "statusbar"
+        "statusbar",
+        "menu",
+        "dropdown"
     ],
     "icon": "logo.png",
     "engines": {
@@ -44,7 +59,50 @@
             }
         ],
         "configuration": {
+            "title": "Tasks2",
             "properties": {
+                "tasks.statusbar.displayMode": {
+                    "type": "string",
+                    "enum": [
+                        "menu",
+                        "all"
+                    ],
+                    "enumDescriptions": [
+                        "Show a single dropdown button labeled 'Tasks'. Clicking it opens a Quick Pick with all available tasks.",
+                        "Show every task as its own status bar item (legacy behavior)."
+                    ],
+                    "default": "menu",
+                    "description": "How tasks are presented in the status bar."
+                },
+                "tasks.statusbar.alignment": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right"
+                    ],
+                    "default": "right",
+                    "description": "Which side of the status bar the Tasks button(s) appear on."
+                },
+                "tasks.statusbar.priority": {
+                    "type": "integer",
+                    "default": 50,
+                    "description": "Priority of the status bar item(s). Higher values appear further from the editor edge on the chosen side."
+                },
+                "tasks.statusbar.menu.label": {
+                    "type": "string",
+                    "default": "Tasks",
+                    "description": "Text shown next to the icon on the dropdown button when displayMode is 'menu'."
+                },
+                "tasks.statusbar.menu.icon": {
+                    "type": "string",
+                    "default": "checklist",
+                    "description": "Codicon id used by the dropdown button when displayMode is 'menu' (e.g. 'checklist', 'tasklist', 'rocket', 'play')."
+                },
+                "tasks.statusbar.menu.showActionsButton": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show a small extra status bar item next to the Tasks dropdown that opens an actions menu (Settings, Refresh, ...). Useful as a workaround for the missing right-click context menu API on status bar items."
+                },
                 "tasks.statusbar.default.hide": {
                     "type": "boolean",
                     "default": false
@@ -58,7 +116,8 @@
                         "integer",
                         "null"
                     ],
-                    "default": null
+                    "default": null,
+                    "description": "Maximum number of task items to show when displayMode is 'all'. Excess tasks are moved to the overflow Quick Pick."
                 },
                 "tasks.statusbar.select.label": {
                     "type": "string",
@@ -69,7 +128,21 @@
                     "default": ""
                 }
             }
-        }
+        },
+        "commands": [
+            {
+                "command": "actboy168.tasks2.openSettings",
+                "title": "Tasks2: Open Settings"
+            },
+            {
+                "command": "actboy168.tasks2.showActions",
+                "title": "Tasks2: Show Actions Menu"
+            },
+            {
+                "command": "actboy168.tasks2.refresh",
+                "title": "Tasks2: Refresh Tasks"
+            }
+        ]
     },
     "devDependencies": {
         "@types/vscode": "^1.75.0"

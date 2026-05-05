@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Tasks2 logo">
+  <title>Tasks2</title>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#1F8AE0"/>
+      <stop offset="55%" stop-color="#0E63B8"/>
+      <stop offset="100%" stop-color="#0A2E5C"/>
+    </linearGradient>
+
+    <linearGradient id="terminal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0B1E3A"/>
+      <stop offset="100%" stop-color="#050E1F"/>
+    </linearGradient>
+
+    <linearGradient id="play" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#7CF59A"/>
+      <stop offset="100%" stop-color="#1FB85C"/>
+    </linearGradient>
+
+    <linearGradient id="badge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#FFC857"/>
+      <stop offset="100%" stop-color="#F08A1C"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="3" result="o"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background tile -->
+  <rect x="8" y="8" width="240" height="240" rx="52" ry="52" fill="url(#bg)"/>
+  <rect x="8" y="8" width="240" height="240" rx="52" ry="52"
+        fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
+
+  <!-- Terminal window: the heart of "tasks" -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="50" width="176" height="124" rx="16" ry="16"
+          fill="url(#terminal)" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2.5"/>
+
+    <!-- Title bar -->
+    <path d="M40 66 a16 16 0 0 1 16 -16 H200 a16 16 0 0 1 16 16 V76 H40 Z"
+          fill="#FFFFFF" fill-opacity="0.08"/>
+    <line x1="40" y1="76" x2="216" y2="76" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1"/>
+
+    <!-- Traffic-light dots -->
+    <circle cx="58" cy="63" r="4.5" fill="#FF5F57"/>
+    <circle cx="74" cy="63" r="4.5" fill="#FEBC2E"/>
+    <circle cx="90" cy="63" r="4.5" fill="#28C840"/>
+
+    <!-- ">" chevron prompt -->
+    <path d="M64 100 L82 114 L64 128"
+          fill="none" stroke="#7CF59A" stroke-width="6"
+          stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+    <!-- Play / running indicator -->
+    <path d="M98 102 L132 117 L98 132 Z"
+          fill="url(#play)" stroke="#0B2E1A" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- Mini gear (automation) -->
+    <g transform="translate(170 117)">
+      <g fill="#FFFFFF" fill-opacity="0.92">
+        <rect x="-3" y="-22" width="6" height="8" rx="1.2"/>
+        <rect x="-3" y="14"  width="6" height="8" rx="1.2"/>
+        <rect x="-22" y="-3" width="8" height="6" rx="1.2"/>
+        <rect x="14"  y="-3" width="8" height="6" rx="1.2"/>
+        <g transform="rotate(45)">
+          <rect x="-3" y="-22" width="6" height="8" rx="1.2"/>
+          <rect x="-3" y="14"  width="6" height="8" rx="1.2"/>
+          <rect x="-22" y="-3" width="8" height="6" rx="1.2"/>
+          <rect x="14"  y="-3" width="8" height="6" rx="1.2"/>
+        </g>
+        <circle r="13"/>
+      </g>
+      <circle r="5.5" fill="#0B1E3A"/>
+    </g>
+
+    <!-- Caret -->
+    <rect x="138" y="103" width="4" height="28" rx="1" fill="#7CF59A" opacity="0.85"/>
+
+    <!-- Second line of output -->
+    <line x1="64"  y1="148" x2="120" y2="148" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+    <line x1="128" y1="148" x2="156" y2="148" stroke="#7CF59A" stroke-opacity="0.7"  stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark: TASKS -->
+  <text x="82" y="218"
+        text-anchor="middle"
+        font-family="Segoe UI, Inter, system-ui, -apple-system, Helvetica, Arial, sans-serif"
+        font-weight="800"
+        font-size="40"
+        letter-spacing="2"
+        fill="#FFFFFF">TASKS</text>
+
+  <!-- Stylized "2" badge -->
+  <g transform="translate(196 202) rotate(-8)">
+    <circle r="24" fill="url(#badge)" stroke="#FFFFFF" stroke-width="3"/>
+    <circle r="24" fill="none" stroke="#7A3A00" stroke-opacity="0.25" stroke-width="1.5"/>
+    <text x="0" y="1"
+          text-anchor="middle"
+          dominant-baseline="central"
+          font-family="Segoe UI, Inter, system-ui, -apple-system, Helvetica, Arial, sans-serif"
+          font-weight="900"
+          font-style="italic"
+          font-size="34"
+          fill="#3A1A00">2</text>
+  </g>
+</svg>
