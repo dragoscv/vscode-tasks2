@@ -5,6 +5,19 @@ All notable changes to **Tasks2** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2026-05-06
+
+### Added
+
+- `tasks.statusbar.hiddenTasks` setting: a list of task labels to hide from
+  the status bar / dropdown menu.
+- New command `Tasks2: Manage Hidden Tasks` to interactively pick which tasks
+  are visible.
+- Per-item `eye-closed` button in the Tasks dropdown to hide a single task in
+  one click, plus an `eye` button in the dropdown title bar that opens the
+  manage-hidden dialog.
+- "Manage Hidden Tasks" entry in the Actions menu.
+
 ## [0.17.0] - 2026-05-05
 
 First release of the **Tasks2** fork
