@@ -2,7 +2,7 @@
     "name": "tasks2",
     "displayName": "Tasks2",
     "description": "Load VSCode Tasks into the Status Bar with a configurable dropdown menu. Forked from actboy168/vscode-tasks.",
-    "version": "0.18.4",
+    "version": "0.19.0",
     "publisher": "dragoscv",
     "author": {
         "name": "actboy168",
@@ -72,11 +72,13 @@
                     "type": "string",
                     "enum": [
                         "menu",
-                        "all"
+                        "all",
+                        "both"
                     ],
                     "enumDescriptions": [
                         "Show a single dropdown button labeled 'Tasks'. Clicking it opens a Quick Pick with all available tasks.",
-                        "Show every task as its own status bar item (legacy behavior)."
+                        "Show every task as its own status bar item (legacy behavior).",
+                        "Show both the dropdown 'Tasks' button AND every task as its own status bar item. Each view has independent hidden-task lists."
                     ],
                     "default": "menu",
                     "description": "How tasks are presented in the status bar."
@@ -121,7 +123,25 @@
                     },
                     "default": [],
                     "uniqueItems": true,
-                    "description": "List of task labels to hide from the Tasks2 status bar / dropdown menu. Use the 'Tasks2: Manage Hidden Tasks' command (or the eye-closed button next to a task in the dropdown) to edit this list interactively."
+                    "markdownDescription": "Legacy / shared list of task labels to hide from **both** views. Prefer the per-view settings `#tasks.statusbar.menu.hiddenTasks#` and `#tasks.statusbar.list.hiddenTasks#`. A task is hidden in a view if it appears in this list OR in that view's list."
+                },
+                "tasks.statusbar.menu.hiddenTasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "uniqueItems": true,
+                    "description": "Task labels to hide from the dropdown menu (Quick Pick) view. Use 'Tasks2: Manage Menu Hidden Tasks'."
+                },
+                "tasks.statusbar.list.hiddenTasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "uniqueItems": true,
+                    "description": "Task labels to hide from the per-task status bar items view (the 'all' / list view). Use 'Tasks2: Manage List Hidden Tasks'."
                 },
                 "tasks.statusbar.default.color": {
                     "type": "string",
@@ -161,6 +181,14 @@
             {
                 "command": "actboy168.tasks2.manageHiddenTasks",
                 "title": "Tasks2: Manage Hidden Tasks"
+            },
+            {
+                "command": "actboy168.tasks2.manageMenuHiddenTasks",
+                "title": "Tasks2: Manage Menu Hidden Tasks"
+            },
+            {
+                "command": "actboy168.tasks2.manageListHiddenTasks",
+                "title": "Tasks2: Manage List Hidden Tasks"
             }
         ]
     },

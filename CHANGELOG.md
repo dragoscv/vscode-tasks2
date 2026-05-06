@@ -5,6 +5,31 @@ All notable changes to **Tasks2** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] - 2026-05-06
+
+### Added
+
+- New display mode `both` for `tasks.statusbar.displayMode`: shows the
+  dropdown **Tasks** button AND every task as its own status bar item at the
+  same time.
+- Per-view hidden-task lists, each managed independently:
+  - `tasks.statusbar.menu.hiddenTasks` — tasks hidden from the dropdown.
+  - `tasks.statusbar.list.hiddenTasks` — tasks hidden from the per-task
+    status bar items.
+- New commands:
+  - `Tasks2: Manage Menu Hidden Tasks`
+  - `Tasks2: Manage List Hidden Tasks`
+- `Tasks2: Manage Hidden Tasks` now asks which view to manage when
+  `displayMode` is `both`.
+- The actions menu (`⋮`) exposes the new per-view manage commands.
+
+### Changed
+
+- `tasks.statusbar.hiddenTasks` is now a **shared / legacy** list that hides
+  matching tasks from *both* views. Prefer the per-view settings above.
+- Eye-closed button on a task in the dropdown now hides it from the **menu**
+  view only (not the list view).
+
 ## [0.18.4] - 2026-05-06
 
 ### Changed

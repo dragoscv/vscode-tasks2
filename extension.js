@@ -15,6 +15,8 @@ const OpenSettingsCommand = "actboy168.tasks2.openSettings"
 const ShowActionsCommand = "actboy168.tasks2.showActions"
 const RefreshCommand = "actboy168.tasks2.refresh"
 const ManageHiddenCommand = "actboy168.tasks2.manageHiddenTasks"
+const ManageMenuHiddenCommand = "actboy168.tasks2.manageMenuHiddenTasks"
+const ManageListHiddenCommand = "actboy168.tasks2.manageListHiddenTasks"
 const SettingsQuery = "@ext:dragoscv.tasks2"
 
 //const VSCodeVersion = (function() {
@@ -40,46 +42,71 @@ function needShowStatusBar(statusBar, currentFilePath) {
 
 function getDisplayMode() {
     const settings = vscode.workspace.getConfiguration("tasks.statusbar");
-    return settings.get("displayMode", "menu") === "all" ? "all" : "menu";
+    const v = settings.get("displayMode", "menu");
+    if (v === "all" || v === "both") return v;
+    return "menu";
 }
 
-function getHiddenTasks() {
+function getLegacyHiddenTasks() {
     const settings = vscode.workspace.getConfiguration("tasks.statusbar");
     const list = settings.get("hiddenTasks", []);
     return Array.isArray(list) ? list : [];
 }
 
-function isTaskHidden(label) {
-    if (typeof label !== "string" || label.length === 0) return false;
-    return getHiddenTasks().indexOf(label) !== -1;
+function getViewHiddenTasks(view) {
+    // view: "menu" | "list"
+    const settings = vscode.workspace.getConfiguration("tasks.statusbar");
+    const key = view === "list" ? "list.hiddenTasks" : "menu.hiddenTasks";
+    const list = settings.get(key, []);
+    return Array.isArray(list) ? list : [];
 }
 
-async function setHiddenTasks(list) {
+function getHiddenTasks(view) {
+    // Merged hidden list for a given view ("menu" or "list") = legacy + per-view.
+    // If no view is given, fall back to legacy + active mode's list.
+    if (view !== "menu" && view !== "list") {
+        view = getDisplayMode() === "all" ? "list" : "menu";
+    }
+    const merged = new Set([...getLegacyHiddenTasks(), ...getViewHiddenTasks(view)]);
+    return [...merged];
+}
+
+function isTaskHidden(label, view) {
+    if (typeof label !== "string" || label.length === 0) return false;
+    return getHiddenTasks(view).indexOf(label) !== -1;
+}
+
+async function setHiddenTasksForView(view, list) {
     const settings = vscode.workspace.getConfiguration("tasks.statusbar");
-    const inspected = settings.inspect("hiddenTasks");
+    const key = view === "list" ? "list.hiddenTasks" : "menu.hiddenTasks";
+    const inspected = settings.inspect(key);
     let target = vscode.ConfigurationTarget.Workspace;
-    // If it was only ever set globally (no workspace value) and a workspace is open, still prefer workspace.
     if (!vscode.workspace.workspaceFolders && !vscode.workspace.workspaceFile) {
         target = vscode.ConfigurationTarget.Global;
     } else if (inspected && inspected.workspaceValue === undefined && inspected.globalValue !== undefined) {
-        // Honor existing global setting if user configured it globally.
         target = vscode.ConfigurationTarget.Global;
     }
-    await settings.update("hiddenTasks", list, target);
+    await settings.update(key, list, target);
 }
 
-async function hideTaskByLabel(label) {
+async function hideTaskByLabel(label, view) {
     if (typeof label !== "string" || label.length === 0) return;
-    const list = getHiddenTasks().slice();
+    if (view !== "menu" && view !== "list") {
+        view = getDisplayMode() === "all" ? "list" : "menu";
+    }
+    const list = getViewHiddenTasks(view).slice();
     if (list.indexOf(label) === -1) {
         list.push(label);
-        await setHiddenTasks(list);
+        await setHiddenTasksForView(view, list);
     }
 }
 
-async function unhideTaskByLabel(label) {
-    const list = getHiddenTasks().filter(l => l !== label);
-    await setHiddenTasks(list);
+async function unhideTaskByLabel(label, view) {
+    if (view !== "menu" && view !== "list") {
+        view = getDisplayMode() === "all" ? "list" : "menu";
+    }
+    const list = getViewHiddenTasks(view).filter(l => l !== label);
+    await setHiddenTasksForView(view, list);
 }
 
 function updateStatusBar() {
@@ -90,20 +117,23 @@ function updateStatusBar() {
 
     const settings = vscode.workspace.getConfiguration("tasks.statusbar");
     const currentFilePath = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document.fileName;
+    const mode = getDisplayMode();
+    const showMenu = mode === "menu" || mode === "both";
+    const showList = mode === "all" || mode === "both";
 
-    if (getDisplayMode() === "menu") {
-        // In menu mode all visible tasks become entries in the dropdown.
-        menuItems = [];
+    // Always rebuild menu items (used when menu view is active).
+    menuItems = [];
+    if (showMenu) {
         for (let i = 0; i < statusBarArray.length - 1; ++i) {
             const statusBar = statusBarArray[i];
-            if (needShowStatusBar(statusBar, currentFilePath)) {
-                menuItems.push({
-                    label: statusBar.text,
-                    description: statusBar.tooltip ? statusBar.tooltip.value : undefined,
-                    task: statusBar.command.arguments[0],
-                    taskLabel: statusBar.taskLabel
-                });
-            }
+            if (!needShowStatusBar(statusBar, currentFilePath)) continue;
+            if (isTaskHidden(statusBar.taskLabel, "menu")) continue;
+            menuItems.push({
+                label: statusBar.text,
+                description: statusBar.tooltip ? statusBar.tooltip.value : undefined,
+                task: statusBar.command.arguments[0],
+                taskLabel: statusBar.taskLabel
+            });
         }
         if (menuStatusBar) {
             if (menuItems.length > 0) {
@@ -114,14 +144,14 @@ function updateStatusBar() {
                 if (actionsStatusBar) actionsStatusBar.hide();
             }
         }
-        return;
     }
 
-    // "all" mode: legacy behavior, each task is its own item.
-    let count = 0;
-    for (let i = 0; i < statusBarArray.length - 1; ++i) {
-        const statusBar = statusBarArray[i];
-        if (needShowStatusBar(statusBar, currentFilePath)) {
+    if (showList) {
+        let count = 0;
+        for (let i = 0; i < statusBarArray.length - 1; ++i) {
+            const statusBar = statusBarArray[i];
+            if (!needShowStatusBar(statusBar, currentFilePath)) continue;
+            if (isTaskHidden(statusBar.taskLabel, "list")) continue;
             if (typeof settings.limit === "number" && settings.limit <= count) {
                 selectList.push({
                     label: statusBar.text,
@@ -134,10 +164,9 @@ function updateStatusBar() {
                 count++;
             }
         }
-    }
-
-    if (selectList.length > 0) {
-        statusBarArray[statusBarArray.length - 1].show();
+        if (selectList.length > 0) {
+            statusBarArray[statusBarArray.length - 1].show();
+        }
     }
 }
 
@@ -539,7 +568,7 @@ function syncStatusBar(memoryStatusBarArray) {
         }
     }
 
-    if (mode === "menu") {
+    if (mode === "menu" || mode === "both") {
         ensureMenuStatusBar();
     } else {
         disposeMenuStatusBar();
@@ -592,9 +621,8 @@ function matchTasksInScope(memoryStatusBarArray, tasks, runningTasks, config) {
         }
         const isRunning = runningTasks[taskObject._id];
         let label = getAttribute(taskObject, taskInfo, "label", isRunning);
-        if (isTaskHidden(label)) {
-            continue;
-        }
+        // Per-view hidden filtering happens at render time (updateStatusBar) so each view
+        // can independently include/exclude tasks. We keep all matched tasks here.
         const rawLabel = label;
         const icon = getAttribute(taskObject, taskInfo, "icon", isRunning);
         if (icon && icon.id) {
@@ -772,8 +800,8 @@ function openTasksMenu() {
     });
     qp.onDidTriggerItemButton(async (e) => {
         if (e.button === hideButton && e.item && e.item.taskLabel) {
-            await hideTaskByLabel(e.item.taskLabel);
-            vscode.window.setStatusBarMessage(`Tasks2: hidden "${e.item.taskLabel}"`, 3000);
+            await hideTaskByLabel(e.item.taskLabel, "menu");
+            vscode.window.setStatusBarMessage(`Tasks2: hidden "${e.item.taskLabel}" from menu`, 3000);
             qp.hide();
         }
     });
@@ -788,34 +816,81 @@ function openTasksMenu() {
     qp.show();
 }
 
-function manageHiddenTasks() {
-    const hidden = getHiddenTasks();
-    // Collect currently visible task labels (across all status bar items, not just current-file filtered).
-    const visibleLabels = new Set();
+function manageHiddenTasksForView(view) {
+    // view: "menu" | "list"
+    const viewLabel = view === "list" ? "list view" : "menu view";
+    const hidden = getHiddenTasks(view);
+    const legacy = new Set(getLegacyHiddenTasks());
+    const perView = new Set(getViewHiddenTasks(view));
+    // Collect currently known task labels.
+    const knownLabels = new Set();
     for (let i = 0; i < statusBarArray.length - 1; ++i) {
         const sb = statusBarArray[i];
-        if (sb && sb.taskLabel) visibleLabels.add(sb.taskLabel);
+        if (sb && sb.taskLabel) knownLabels.add(sb.taskLabel);
     }
-    const allLabels = new Set([...hidden, ...visibleLabels]);
+    const allLabels = new Set([...hidden, ...knownLabels]);
     if (allLabels.size === 0) {
         vscode.window.showInformationMessage("Tasks2: no tasks discovered yet.");
         return;
     }
-    const items = [...allLabels].sort().map(label => ({
-        label,
-        description: hidden.indexOf(label) !== -1 ? "$(eye-closed) hidden" : "$(eye) visible",
-        picked: hidden.indexOf(label) === -1
-    }));
+    const items = [...allLabels].sort().map(label => {
+        const isLegacy = legacy.has(label);
+        const isHidden = isLegacy || perView.has(label);
+        let description;
+        if (isLegacy) {
+            description = "$(eye-closed) hidden (shared list)";
+        } else if (isHidden) {
+            description = "$(eye-closed) hidden";
+        } else {
+            description = "$(eye) visible";
+        }
+        return {
+            label,
+            description,
+            picked: !isHidden,
+            _legacy: isLegacy
+        };
+    });
     vscode.window.showQuickPick(items, {
         canPickMany: true,
-        placeHolder: "Check tasks to keep VISIBLE in the status bar (uncheck to hide)"
+        placeHolder: `Check tasks to keep VISIBLE in the ${viewLabel} (uncheck to hide)`
     }).then(async (picked) => {
         if (!picked) return;
         const visibleSet = new Set(picked.map(p => p.label));
-        const newHidden = [...allLabels].filter(l => !visibleSet.has(l));
-        await setHiddenTasks(newHidden);
-        vscode.window.setStatusBarMessage(`Tasks2: hidden ${newHidden.length} task(s)`, 3000);
+        // Compute new per-view hidden list. Legacy entries cannot be removed here
+        // (they are shared) — show a hint if user tried to unhide one.
+        const newHidden = [];
+        let blockedByLegacy = 0;
+        for (const label of allLabels) {
+            if (visibleSet.has(label)) {
+                if (legacy.has(label)) blockedByLegacy++;
+                continue;
+            }
+            if (legacy.has(label)) continue; // already hidden via legacy list, no need to duplicate
+            newHidden.push(label);
+        }
+        await setHiddenTasksForView(view, newHidden);
+        let msg = `Tasks2: ${viewLabel} hidden ${newHidden.length} task(s)`;
+        if (blockedByLegacy > 0) {
+            msg += ` (${blockedByLegacy} still hidden via legacy 'tasks.statusbar.hiddenTasks')`;
+        }
+        vscode.window.setStatusBarMessage(msg, 4000);
     });
+}
+
+function manageHiddenTasks() {
+    const mode = getDisplayMode();
+    if (mode === "both") {
+        vscode.window.showQuickPick([
+            { label: "$(list-unordered) Menu view", value: "menu", description: "Tasks shown in the dropdown Quick Pick" },
+            { label: "$(symbol-array) List view", value: "list", description: "Per-task status bar items" }
+        ], { placeHolder: "Which view's hidden tasks do you want to manage?" }).then((picked) => {
+            if (!picked) return;
+            manageHiddenTasksForView(picked.value);
+        });
+        return;
+    }
+    manageHiddenTasksForView(mode === "all" ? "list" : "menu");
 }
 
 function showActionsMenu() {
@@ -834,6 +909,16 @@ function showActionsMenu() {
             label: "$(eye-closed) Manage Hidden Tasks",
             description: "Choose which tasks appear in the status bar",
             action: "manageHidden"
+        },
+        {
+            label: "$(list-unordered) Manage Menu Hidden Tasks",
+            description: "Hide/show tasks in the dropdown menu view",
+            action: "manageMenuHidden"
+        },
+        {
+            label: "$(symbol-array) Manage List Hidden Tasks",
+            description: "Hide/show tasks in the per-task list view",
+            action: "manageListHidden"
         },
         {
             label: "$(list-unordered) Show Tasks Menu",
@@ -857,6 +942,12 @@ function showActionsMenu() {
                 break;
             case "manageHidden":
                 manageHiddenTasks();
+                break;
+            case "manageMenuHidden":
+                manageHiddenTasksForView("menu");
+                break;
+            case "manageListHidden":
+                manageHiddenTasksForView("list");
                 break;
             case "menu":
                 openTasksMenu();
@@ -906,9 +997,12 @@ function activate(context) {
         vscode.commands.registerCommand(ShowActionsCommand, showActionsMenu),
         vscode.commands.registerCommand(RefreshCommand, loadTasksWait),
         vscode.commands.registerCommand(ManageHiddenCommand, manageHiddenTasks),
+        vscode.commands.registerCommand(ManageMenuHiddenCommand, () => manageHiddenTasksForView("menu")),
+        vscode.commands.registerCommand(ManageListHiddenCommand, () => manageHiddenTasksForView("list")),
         vscode.workspace.onDidChangeConfiguration((e) => {
             if (e.affectsConfiguration("tasks.statusbar")) {
-                if (getDisplayMode() === "menu") {
+                const m = getDisplayMode();
+                if (m === "menu" || m === "both") {
                     ensureMenuStatusBar();
                 } else {
                     disposeMenuStatusBar();

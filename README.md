@@ -12,12 +12,27 @@ as its own button" mode from settings.
 
 ## Display modes
 
-Two presentations are available, configurable via `tasks.statusbar.displayMode`:
+Three presentations are available, configurable via `tasks.statusbar.displayMode`:
 
 | Mode | What you see |
 | ---- | ------------ |
 | `menu` *(default)* | A single `$(checklist) Tasks` button. Clicking it opens a vertical Quick Pick of all tasks. |
 | `all` | Every task is rendered as its own status bar item (legacy behavior). |
+| `both` | The `Tasks` dropdown **and** every task as its own status bar item, side by side. Each view has an independent hidden-task list. |
+
+### Hiding tasks per view
+
+Each view has its own hidden-task list, so you can show a task in the
+dropdown but keep it out of the per-task buttons (or vice-versa):
+
+- `tasks.statusbar.menu.hiddenTasks` — hides a task from the dropdown.
+- `tasks.statusbar.list.hiddenTasks` — hides a task from the per-task buttons.
+- `tasks.statusbar.hiddenTasks` — legacy / shared list; hides from both.
+
+Use the commands **`Tasks2: Manage Menu Hidden Tasks`** and
+**`Tasks2: Manage List Hidden Tasks`** to edit each list interactively, or
+**`Tasks2: Manage Hidden Tasks`** which prompts for the view to manage when
+`displayMode` is `both`.
 
 A small `⋮` button next to the Tasks dropdown opens an actions menu (Open
 Settings, Refresh Tasks, Edit `tasks.json`, …). It exists because the VS Code
@@ -37,12 +52,15 @@ You can also reach the same actions through:
 
 | Setting | Default | Description |
 | ------- | ------- | ----------- |
-| `tasks.statusbar.displayMode` | `menu` | `menu` or `all`. |
+| `tasks.statusbar.displayMode` | `menu` | `menu`, `all`, or `both`. |
 | `tasks.statusbar.alignment` | `right` | `left` or `right` side of the status bar. |
 | `tasks.statusbar.priority` | `50` | Status bar item priority. |
 | `tasks.statusbar.menu.label` | `Tasks` | Text on the dropdown button. |
 | `tasks.statusbar.menu.icon` | `checklist` | Codicon id used on the dropdown button. |
 | `tasks.statusbar.menu.showActionsButton` | `true` | Show the extra `⋮` actions button. |
+| `tasks.statusbar.hiddenTasks` | `[]` | Legacy / shared list of task labels to hide from **both** views. |
+| `tasks.statusbar.menu.hiddenTasks` | `[]` | Task labels to hide from the **menu** (dropdown) view only. |
+| `tasks.statusbar.list.hiddenTasks` | `[]` | Task labels to hide from the **list** (per-task buttons) view only. |
 | `tasks.statusbar.default.hide` | `false` | Hide all tasks by default. |
 | `tasks.statusbar.default.color` | `""` | Default color for status bar items. |
 | `tasks.statusbar.limit` | `null` | (mode `all` only) Maximum number of items before tasks overflow into a Quick Pick. |
