@@ -2,3 +2,7 @@ node_modules/
 package-lock.json
 
 *.vsix
+
+# Local scratch / log files
+_*.log
+_*.txt
