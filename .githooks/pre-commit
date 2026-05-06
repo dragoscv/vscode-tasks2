@@ -1,0 +1,3 @@
+#!/bin/sh
+# Auto-installed via `npm run prepare` — runs the Node validator.
+exec node "$(git rev-parse --show-toplevel)/scripts/pre-commit-check.cjs"

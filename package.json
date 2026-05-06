@@ -2,7 +2,7 @@
     "name": "tasks2",
     "displayName": "Tasks2",
     "description": "Load VSCode Tasks into the Status Bar with a configurable dropdown menu. Forked from actboy168/vscode-tasks.",
-    "version": "0.18.1",
+    "version": "0.18.2",
     "publisher": "dragoscv",
     "author": {
         "name": "actboy168",
@@ -47,6 +47,14 @@
         }
     },
     "main": "./extension.js",
+    "scripts": {
+        "prepare": "node scripts/setup-hooks.cjs",
+        "setup-hooks": "node scripts/setup-hooks.cjs",
+        "release:patch": "node scripts/release.mjs patch",
+        "release:minor": "node scripts/release.mjs minor",
+        "release:major": "node scripts/release.mjs major",
+        "package": "vsce package --no-dependencies"
+    },
     "contributes": {
         "jsonValidation": [
             {
