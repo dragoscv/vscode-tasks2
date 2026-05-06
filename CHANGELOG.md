@@ -9,7 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- _TODO: describe the changes._
+- Default `tasks.statusbar.alignment` is now `left` (was `right`).
+- "Open Settings" actions now open the full Tasks2 settings page
+  (`@ext:dragoscv.tasks2`) instead of an exact-id filter that often returned
+  no results.
+- CI: workflow now publishes only when the version in `package.json` is not
+  already on the VS Marketplace / Open VSX, so re-runs and unrelated pushes
+  no longer fail with "version already exists".
+- CI: pinned Node 22 and split the publish steps for clearer logs.
+
+### Added
+
+- `scripts/release.mjs` — release helper that bumps the version and prepends
+  a CHANGELOG section. Usage: `npm run release:patch` (or `:minor`/`:major`).
+- `.githooks/pre-commit` — pre-commit guard that requires a matching
+  CHANGELOG entry whenever `package.json` `version` is bumped. Auto-installed
+  via `npm run prepare` / `npm run setup-hooks`.
 
 ## [0.18.1] - 2026-05-06
 

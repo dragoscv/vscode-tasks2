@@ -15,7 +15,7 @@ const OpenSettingsCommand = "actboy168.tasks2.openSettings"
 const ShowActionsCommand = "actboy168.tasks2.showActions"
 const RefreshCommand = "actboy168.tasks2.refresh"
 const ManageHiddenCommand = "actboy168.tasks2.manageHiddenTasks"
-const SettingsId = "tasks.statusbar"
+const SettingsQuery = "@ext:dragoscv.tasks2"
 
 //const VSCodeVersion = (function() {
 //    const res = vscode.version.split(".");
@@ -168,9 +168,9 @@ function cleanStatusBar() {
 
 function getAlignment() {
     const settings = vscode.workspace.getConfiguration("tasks.statusbar");
-    return settings.get("alignment", "right") === "left"
-        ? vscode.StatusBarAlignment.Left
-        : vscode.StatusBarAlignment.Right;
+    return settings.get("alignment", "left") === "right"
+        ? vscode.StatusBarAlignment.Right
+        : vscode.StatusBarAlignment.Left;
 }
 
 function getPriority() {
@@ -762,7 +762,7 @@ function openTasksMenu() {
     qp.onDidTriggerButton((btn) => {
         if (btn === settingsButton) {
             qp.hide();
-            vscode.commands.executeCommand("workbench.action.openSettings", `@id:${SettingsId}`);
+            vscode.commands.executeCommand("workbench.action.openSettings", SettingsQuery);
         } else if (btn === refreshButton) {
             loadTasksWait();
         } else if (btn === manageHiddenButton) {
@@ -850,7 +850,7 @@ function showActionsMenu() {
         if (!picked) return;
         switch (picked.action) {
             case "settings":
-                vscode.commands.executeCommand("workbench.action.openSettings", `@id:${SettingsId}`);
+                vscode.commands.executeCommand("workbench.action.openSettings", SettingsQuery);
                 break;
             case "refresh":
                 loadTasksWait();
@@ -901,7 +901,7 @@ function activate(context) {
         }),
         vscode.commands.registerCommand(OpenMenuCommand, openTasksMenu),
         vscode.commands.registerCommand(OpenSettingsCommand, () => {
-            vscode.commands.executeCommand("workbench.action.openSettings", `@id:${SettingsId}`);
+            vscode.commands.executeCommand("workbench.action.openSettings", SettingsQuery);
         }),
         vscode.commands.registerCommand(ShowActionsCommand, showActionsMenu),
         vscode.commands.registerCommand(RefreshCommand, loadTasksWait),

@@ -88,7 +88,7 @@
                         "left",
                         "right"
                     ],
-                    "default": "right",
+                    "default": "left",
                     "description": "Which side of the status bar the Tasks button(s) appear on."
                 },
                 "tasks.statusbar.priority": {
