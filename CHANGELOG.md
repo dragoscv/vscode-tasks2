@@ -5,7 +5,7 @@ All notable changes to **Tasks2** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.18.2] - 2026-05-06
+## [0.18.3] - 2026-05-06
 
 ### Changed
 
@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Open Settings" actions now open the full Tasks2 settings page
   (`@ext:dragoscv.tasks2`) instead of an exact-id filter that often returned
   no results.
+
+## [0.18.2] - 2026-05-06
+
+### Changed
+
 - CI: workflow now publishes only when the version in `package.json` is not
   already on the VS Marketplace / Open VSX, so re-runs and unrelated pushes
   no longer fail with "version already exists".
