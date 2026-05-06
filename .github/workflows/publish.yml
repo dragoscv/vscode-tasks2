@@ -59,7 +59,18 @@ jobs:
         if: steps.vsce_check.outputs.published == 'no'
         env:
           VSCE_PAT: ${{ secrets.VSCE_KEY }}
-        run: vsce publish
+        run: |
+          set +e
+          out=$(vsce publish 2>&1)
+          code=$?
+          echo "$out"
+          if [ $code -ne 0 ]; then
+            if echo "$out" | grep -qiE "already exists"; then
+              echo "::notice::Marketplace already has this version (cache lag) — treating as success."
+              exit 0
+            fi
+            exit $code
+          fi
 
       - name: Skip VS Marketplace (already published)
         if: steps.vsce_check.outputs.published == 'yes'
