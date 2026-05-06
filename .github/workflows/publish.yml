@@ -69,6 +69,12 @@ jobs:
         if: env.HAS_OVSX == 'true'
         run: npm install -g ovsx
 
+      - name: Ensure Open VSX namespace exists
+        if: env.HAS_OVSX == 'true'
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_KEY }}
+        run: ovsx create-namespace ${{ steps.pkg.outputs.publisher }} || true
+
       - name: Check Open VSX for existing version
         id: ovsx_check
         if: env.HAS_OVSX == 'true'
