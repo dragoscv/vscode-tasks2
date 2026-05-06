@@ -1,5 +1,8 @@
 name: publish
-on: push
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
 jobs:
   publish:
     runs-on: ubuntu-latest
