@@ -1,8 +1,7 @@
 # Tasks2
 
 > Forked from [actboy168/vscode-tasks](https://github.com/actboy168/vscode-tasks)
-> and maintained by [Dragos Catalin Vladulescu](https://github.com/dragoscv)
-> (`dragoscv12@gmail.com`).
+> and maintained by [Dragos Catalin](https://github.com/dragoscv).
 
 Tasks2 loads your VS Code tasks into the status bar. By default it adds a single
 **Tasks** dropdown button on the right side of the status bar; clicking it opens
@@ -122,7 +121,7 @@ For instance, the following would only display the "Test" button when a filename
 ## Credits
 
 - Original project: [actboy168/vscode-tasks](https://github.com/actboy168/vscode-tasks) by [actboy168](https://github.com/actboy168).
-- Tasks2 fork & maintenance, dropdown menu, configurable alignment, actions menu, new logo: [Dragos Catalin Vladulescu](https://github.com/dragoscv) <dragoscv12@gmail.com>.
+- Tasks2 fork & maintenance, dropdown menu, configurable alignment, actions menu, new logo: [Dragos Catalin](https://github.com/dragoscv).
 
 ## License
 

@@ -2,7 +2,7 @@
     "name": "tasks2",
     "displayName": "Tasks2",
     "description": "Load VSCode Tasks into the Status Bar with a configurable dropdown menu. Forked from actboy168/vscode-tasks.",
-    "version": "0.18.3",
+    "version": "0.18.4",
     "publisher": "dragoscv",
     "author": {
         "name": "actboy168",
@@ -10,8 +10,7 @@
     },
     "contributors": [
         {
-            "name": "Dragos Catalin Vladulescu",
-            "email": "dragoscv12@gmail.com",
+            "name": "Dragos Catalin",
             "url": "https://github.com/dragoscv"
         }
     ],
