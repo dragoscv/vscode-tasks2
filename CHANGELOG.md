@@ -5,6 +5,13 @@ All notable changes to **Tasks2** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.1] - 2026-05-06
+
+### Changed
+
+- Republished under the `dragoscv` Marketplace publisher
+  ([marketplace.visualstudio.com/publishers/dragoscv](https://marketplace.visualstudio.com/publishers/dragoscv)).
+
 ## [0.18.0] - 2026-05-06
 
 ### Added
