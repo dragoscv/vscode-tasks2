@@ -5,7 +5,7 @@ All notable changes to **Tasks2** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.19.1] - 2026-05-09
 
 ### Fixed
 
@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of the **Tasks** menu icon, which sits immediately before the per-task items
   (left-to-right: Actions → Tasks menu → task items). Ordering is now
   deterministic on both left- and right-aligned status bars.
+
+### Changed
+
+- Pre-commit hook now enforces a version bump + CHANGELOG entry whenever
+  release-affecting files (`extension.js`, `package.json`, schema JSONs, logo)
+  are staged, syntax-checks staged JS files, and runs a `vsce package` smoke
+  test. Skip the smoke test with `SKIP_PACKAGE=1`; bypass the whole hook with
+  `git commit --no-verify`.
 
 ## [0.19.0] - 2026-05-06
 
