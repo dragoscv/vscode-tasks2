@@ -216,12 +216,21 @@ function ensureMenuStatusBar() {
     const icon = settings.get("menu.icon", "checklist");
     const showActions = settings.get("menu.showActionsButton", true);
 
-    if (menuStatusBar && (menuStatusBar.alignment !== alignment || menuStatusBar.priority !== priority)) {
+    // Desired left-to-right visual order: [Actions kebab] [Tasks menu] [task items].
+    // On LEFT alignment, higher priority renders further to the LEFT.
+    // On RIGHT alignment, higher priority renders further to the RIGHT.
+    // Task items use `priority` (rightmost of the group), menu uses priority+1,
+    // actions uses priority+2 so they sit to the left of the items group.
+    const isRight = alignment === vscode.StatusBarAlignment.Right;
+    const menuPriority = isRight ? priority - 1 : priority + 1;
+    const actionsPriority = isRight ? priority - 2 : priority + 2;
+
+    if (menuStatusBar && (menuStatusBar.alignment !== alignment || menuStatusBar.priority !== menuPriority)) {
         menuStatusBar.dispose();
         menuStatusBar = undefined;
     }
     if (!menuStatusBar) {
-        menuStatusBar = vscode.window.createStatusBarItem(alignment, priority);
+        menuStatusBar = vscode.window.createStatusBarItem(alignment, menuPriority);
         menuStatusBar.name = "Tasks2";
     }
     menuStatusBar.text = icon ? `$(${icon}) ${label}` : label;
@@ -233,12 +242,12 @@ function ensureMenuStatusBar() {
     menuStatusBar.command = OpenMenuCommand;
 
     if (showActions) {
-        if (actionsStatusBar && (actionsStatusBar.alignment !== alignment || actionsStatusBar.priority !== priority - 1)) {
+        if (actionsStatusBar && (actionsStatusBar.alignment !== alignment || actionsStatusBar.priority !== actionsPriority)) {
             actionsStatusBar.dispose();
             actionsStatusBar = undefined;
         }
         if (!actionsStatusBar) {
-            actionsStatusBar = vscode.window.createStatusBarItem(alignment, priority - 1);
+            actionsStatusBar = vscode.window.createStatusBarItem(alignment, actionsPriority);
             actionsStatusBar.name = "Tasks2 Actions";
         }
         actionsStatusBar.text = "$(kebab-vertical)";

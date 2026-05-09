@@ -5,6 +5,15 @@ All notable changes to **Tasks2** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Status bar icon ordering: the **Actions** (kebab) icon now sits to the left
+  of the **Tasks** menu icon, which sits immediately before the per-task items
+  (left-to-right: Actions → Tasks menu → task items). Ordering is now
+  deterministic on both left- and right-aligned status bars.
+
 ## [0.19.0] - 2026-05-06
 
 ### Added
