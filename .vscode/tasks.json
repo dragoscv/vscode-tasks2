@@ -1,0 +1,175 @@
+{
+    // Tasks for the tasks2 VS Code extension itself.
+    // These show up in this extension's own status bar dropdown thanks to the
+    // `statusbar` property below.
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "package",
+            "type": "shell",
+            "command": "npx --yes @vscode/vsce package --no-dependencies",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "statusbar": {
+                "label": "$(package) Package",
+                "tooltip": "Build a local .vsix with vsce"
+            }
+        },
+        {
+            "label": "release: patch",
+            "type": "shell",
+            "command": "node scripts/release.mjs patch",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "statusbar": {
+                "label": "$(arrow-up) Release Patch",
+                "tooltip": "Bump patch version + add CHANGELOG stub"
+            }
+        },
+        {
+            "label": "release: minor",
+            "type": "shell",
+            "command": "node scripts/release.mjs minor",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "statusbar": {
+                "label": "$(arrow-up) Release Minor",
+                "tooltip": "Bump minor version + add CHANGELOG stub"
+            }
+        },
+        {
+            "label": "release: major",
+            "type": "shell",
+            "command": "node scripts/release.mjs major",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "statusbar": {
+                "label": "$(rocket) Release Major",
+                "tooltip": "Bump major version + add CHANGELOG stub"
+            }
+        },
+        {
+            "label": "pre-commit check",
+            "type": "shell",
+            "command": "node scripts/pre-commit-check.cjs",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "statusbar": {
+                "label": "$(check) Pre-commit",
+                "tooltip": "Run the pre-commit guard against currently staged files"
+            }
+        },
+        {
+            "label": "pre-commit (skip package)",
+            "type": "shell",
+            "command": "node scripts/pre-commit-check.cjs",
+            "options": {
+                "env": {
+                    "SKIP_PACKAGE": "1"
+                }
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "statusbar": {
+                "hide": true
+            }
+        },
+        {
+            "label": "setup hooks",
+            "type": "shell",
+            "command": "node scripts/setup-hooks.cjs",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "statusbar": {
+                "hide": true
+            }
+        },
+        {
+            "label": "syntax check extension.js",
+            "type": "shell",
+            "command": "node --check extension.js",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "statusbar": {
+                "label": "$(symbol-method) Syntax Check",
+                "tooltip": "node --check extension.js"
+            }
+        },
+        {
+            "label": "open marketplace page",
+            "type": "shell",
+            "windows": {
+                "command": "Start-Process 'https://marketplace.visualstudio.com/items?itemName=dragoscv.tasks2'"
+            },
+            "linux": {
+                "command": "xdg-open 'https://marketplace.visualstudio.com/items?itemName=dragoscv.tasks2'"
+            },
+            "osx": {
+                "command": "open 'https://marketplace.visualstudio.com/items?itemName=dragoscv.tasks2'"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "close": true
+            },
+            "statusbar": {
+                "label": "$(link-external) Marketplace",
+                "tooltip": "Open the VS Marketplace listing"
+            }
+        },
+        {
+            "label": "open publish workflow",
+            "type": "shell",
+            "windows": {
+                "command": "Start-Process 'https://github.com/dragoscv/vscode-tasks2/actions/workflows/publish.yml'"
+            },
+            "linux": {
+                "command": "xdg-open 'https://github.com/dragoscv/vscode-tasks2/actions/workflows/publish.yml'"
+            },
+            "osx": {
+                "command": "open 'https://github.com/dragoscv/vscode-tasks2/actions/workflows/publish.yml'"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "close": true
+            },
+            "statusbar": {
+                "label": "$(github-action) CI",
+                "tooltip": "Open the publish workflow on GitHub"
+            }
+        }
+    ]
+}
